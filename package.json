@@ -1,0 +1,6 @@
+{
+  "name": "glowcare-complaint-bot",
+  "version": "1.0.0",
+  "description": "GlowCare Complaint Care Assistant — AIML-500 AI Lab (Build a Bot). LLM-powered complaint intake chatbot on Vercel serverless.",
+  "private": true
+}

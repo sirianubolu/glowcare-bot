@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlowCare Complaint Care Assistant</title>
+<meta name="description" content="AI-powered complaint intake assistant for GlowCare — built by Siri Anubolu for the AIML-500 AI Lab (Build a Bot).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F4EE; --ink:#14202E; --ink-2:#1B2733; --ink-soft:#4A5865;
+    --line:#D8D3C6; --crimson:#B7284B; --blush:#F3E3E7; --green:#2E7D5B; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--ink-2);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;line-height:1.55;min-height:100vh;
+    background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:48px 48px;background-attachment:fixed;
+    display:flex;flex-direction:column;
+  }
+  body::before{content:"";position:fixed;inset:0;background:var(--paper);opacity:.85;pointer-events:none;z-index:-1}
+
+  header{text-align:center;padding:34px 20px 18px}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  h1{font-family:'IBM Plex Serif',serif;font-weight:700;font-size:clamp(1.5rem,4.5vw,2.3rem);margin:.35rem 0 .3rem}
+  h1 .accent{color:var(--crimson)}
+  .sub{color:var(--ink-soft);font-size:.92rem;max-width:52ch;margin:0 auto}
+  .mode{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;border:1.5px solid var(--line);border-radius:999px;padding:5px 13px;background:var(--card)}
+  .mode i{width:8px;height:8px;border-radius:50%;background:#4ADE80}
+  .mode.demo i{background:#F59E0B}
+
+  .phone{
+    width:min(680px,calc(100% - 32px));margin:14px auto 30px;flex:1;display:flex;flex-direction:column;
+    background:var(--card);border:1.5px solid var(--ink-2);border-radius:18px;overflow:hidden;
+    box-shadow:6px 6px 0 rgba(183,40,75,.18);min-height:480px;max-height:78vh;
+  }
+  .phone-top{background:var(--ink);color:var(--paper);padding:13px 18px;display:flex;align-items:center;gap:11px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--crimson);display:grid;place-items:center;font-family:'IBM Plex Serif',serif;font-weight:700;color:#fff;flex:none}
+  .who b{font-size:.92rem;display:block;line-height:1.2}
+  .who span{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:#9DB0C2;text-transform:uppercase}
+
+  .chat{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,#FBFAF6,#F6F1EE)}
+  .msg{max-width:84%;padding:10px 14px;border-radius:14px;font-size:.92rem;white-space:pre-wrap;word-break:break-word;animation:pop .22s ease}
+  .msg.bot{background:var(--blush);border:1.5px solid #E4C3CC;border-bottom-left-radius:4px;align-self:flex-start}
+  .msg.user{background:var(--ink);color:var(--paper);border-bottom-right-radius:4px;align-self:flex-end}
+  .msg.sys{align-self:center;background:transparent;border:1.5px dashed var(--line);color:var(--ink-soft);font-size:.76rem;font-family:'IBM Plex Mono',monospace;max-width:95%}
+  .msg .json{
+    display:block;margin-top:8px;background:#101B27;color:#DCE6EE;border:1.5px solid var(--crimson);
+    border-radius:10px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;line-height:1.55;overflow-x:auto;white-space:pre;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .typing{display:inline-flex;gap:4px;padding:12px 14px}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--crimson);opacity:.5;animation:blink 1s infinite}
+  .typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+
+  .quick{display:flex;flex-wrap:wrap;gap:7px;padding:10px 14px;border-top:1.5px dashed var(--line);background:#FBFAF6}
+  .quick button{
+    font-family:'IBM Plex Mono',monospace;font-size:.66rem;border:1.5px solid var(--crimson);color:var(--crimson);
+    background:transparent;border-radius:999px;padding:6px 12px;cursor:pointer;transition:background .15s,color .15s;
+  }
+  .quick button:hover{background:var(--crimson);color:#fff}
+  .composer{display:flex;gap:8px;padding:12px 14px;border-top:1.5px solid var(--ink-2);background:var(--card)}
+  .composer input{
+    flex:1;font-family:'IBM Plex Sans',sans-serif;font-size:16px;border:1.5px solid var(--line);border-radius:9px;
+    padding:11px 13px;background:var(--paper);color:var(--ink-2);
+  }
+  .composer input:focus{outline:2.5px solid var(--crimson);outline-offset:1px;border-color:var(--crimson)}
+  .composer button{
+    font-family:'IBM Plex Mono',monospace;font-size:.78rem;background:var(--crimson);color:#fff;border:1.5px solid var(--crimson);
+    border-radius:9px;padding:0 20px;cursor:pointer;
+  }
+  .composer button:disabled{opacity:.5;cursor:default}
+  .composer button:focus-visible,.quick button:focus-visible{outline:3px solid #2456A6;outline-offset:2px}
+
+  footer{text-align:center;padding:0 20px 26px;font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--ink-soft)}
+  @media (prefers-reduced-motion: reduce){ .msg{animation:none} }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">AIML-500 · AI Lab · Build a Bot</p>
+  <h1>GlowCare Complaint Care Assistant<span class="accent">.</span></h1>
+  <p class="sub">I collect product complaint details with empathy and hand our support team a complete, structured ticket — so you never repeat yourself.</p>
+  <span class="mode" id="mode"><i></i><span id="modeTxt">Live AI</span></span>
+</header>
+
+<div class="phone">
+  <div class="phone-top">
+    <div class="avatar">G</div>
+    <div class="who"><b>GlowCare Care Assistant</b><span>Complaint intake · always on</span></div>
+  </div>
+  <div class="chat" id="chat" aria-live="polite"></div>
+  <div class="quick" id="quick">
+    <button data-q="My vitamin C serum arrived leaking everywhere">🧴 Serum arrived leaking</button>
+    <button data-q="I got a rash after using the face cream">⚠️ Rash from face cream</button>
+    <button data-q="You sent me the wrong shade of foundation">🎨 Wrong foundation shade</button>
+  </div>
+  <div class="composer">
+    <input id="inp" type="text" placeholder="Describe your issue…" aria-label="Type your message" autocomplete="off">
+    <button id="send">Send</button>
+  </div>
+</div>
+
+<footer>Built by Siri Anubolu · Design Thinking → prompt-engineered LLM · Groq Llama 3.3 70B via serverless proxy</footer>
+
+<script>
+(function(){
+  const chat = document.getElementById('chat');
+  const inp = document.getElementById('inp');
+  const send = document.getElementById('send');
+  const quick = document.getElementById('quick');
+  const modeEl = document.getElementById('mode');
+  const modeTxt = document.getElementById('modeTxt');
+
+  let demoMode = false;   // flips on if the API reports no key configured
+  let busy = false;
+  const history = [];     // {role, content} — sent to the serverless function
+
+  const GREETING = "Hi, I'm the GlowCare Care Assistant 🌸 I'm sorry something's gone wrong with your order — I'm here to get every detail to the right team. What happened?";
+
+  function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+  function render(text){
+    // pull a fenced JSON block (the structured summary) into a styled card
+    const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if(m){
+      const before = text.replace(m[0],'').trim();
+      return esc(before) + '<span class="json">' + esc(m[1].trim()) + '</span>';
+    }
+    return esc(text);
+  }
+  function add(cls, html){
+    const el = document.createElement('div');
+    el.className = 'msg ' + cls;
+    el.innerHTML = html;
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+    return el;
+  }
+  function typing(){ return add('bot typing','<i></i><i></i><i></i>'); }
+
+  function setDemo(){
+    if(demoMode) return;
+    demoMode = true;
+    modeEl.classList.add('demo');
+    modeTxt.textContent = 'Demo mode';
+    add('sys','Live AI is not configured on this deployment yet — running the scripted demo of the same conversation design. (Owner: add GROQ_API_KEY in Vercel to go live.)');
+  }
+
+  // ---------- live LLM path ----------
+  async function askLLM(text){
+    history.push({role:'user', content:text});
+    const t = typing();
+    try{
+      const r = await fetch('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({messages: history})
+      });
+      if(r.status === 503){ t.remove(); setDemo(); demoHandle(text, true); return; }
+      if(!r.ok) throw new Error('bad status '+r.status);
+      const data = await r.json();
+      history.push({role:'assistant', content:data.reply});
+      t.classList.remove('typing');
+      t.innerHTML = render(data.reply);
+      chat.scrollTop = chat.scrollHeight;
+    }catch(err){
+      t.classList.remove('typing');
+      t.textContent = "I hit a temporary connection issue — please send that again in a moment.";
+      history.pop(); // let the user resend cleanly
+    }
+  }
+
+  // ---------- scripted fallback (same state machine as the design) ----------
+  const S = { issue:null, product:null, order:null, when:null, photo:null, safety:false, orderRetried:false };
+  let stage = 0;
+  const SAFETY_RX = /\b(rash|burn|burning|allerg\w*|itch\w*|swell\w*|breakout|hives|irritat\w*|reaction)\b/i;
+  const ORDER_RX = /\bGC-?\d{5}\b/i;
+
+  function botSay(text, cb){
+    const t = typing();
+    setTimeout(()=>{ t.classList.remove('typing'); t.textContent=text; chat.scrollTop=chat.scrollHeight; if(cb)cb(); }, 600+Math.random()*400);
+  }
+  function empathyFor(text){
+    if(SAFETY_RX.test(text)) return "I'm so sorry — a skin reaction is upsetting, and your comfort comes first. Please stop using the product for now; I'm flagging this as high priority for our Product Safety team.";
+    if(/leak|spill|broke|broken|shatter|damag/i.test(text)) return "Oh no — receiving a damaged product is really disappointing, and I'm sorry that happened.";
+    if(/wrong|different|shade|missing|didn'?t (arrive|come|get)/i.test(text)) return "I'm sorry about the mix-up — that's frustrating when you were expecting something specific.";
+    return "I'm really sorry you've had this experience — thank you for letting us know.";
+  }
+  function categoryFor(){
+    if(S.safety) return "Adverse Skin Reaction";
+    if(/leak|spill|broke|broken|shatter|damag/i.test(S.issue)) return "Damaged Product";
+    if(/wrong|different|shade/i.test(S.issue)) return "Wrong Item / Shade";
+    if(/late|delay|didn'?t (arrive|come)|missing|lost/i.test(S.issue)) return "Delivery Issue";
+    return "Product Quality";
+  }
+  function summaryCard(){
+    const j = {
+      category: categoryFor(), product: S.product, order_id: S.order,
+      description: S.issue, reported_when: S.when, photo_available: S.photo,
+      priority: S.safety ? "HIGH" : "MEDIUM",
+      escalate: S.safety ? "true → Product Safety team" : "false",
+      sentiment: "negative"
+    };
+    add('bot','<span class="json">'+esc(JSON.stringify(j,null,2))+'</span>');
+  }
+  function demoHandle(text, first){
+    if(stage===0){
+      S.issue=text; S.safety=SAFETY_RX.test(text); stage=1;
+      botSay(empathyFor(text)+" To make sure the right team fixes this quickly, which product is this about? (Name — plus shade or size if it has one.)");
+    } else if(stage===1){
+      S.product=text; stage=2;
+      botSay("Got it — noted. Could you share your order number? It starts with GC- followed by five digits, e.g. GC-48210. You'll find it in your confirmation email.");
+    } else if(stage===2){
+      const m=text.match(ORDER_RX);
+      if(m){ S.order=m[0].toUpperCase().replace('GC','GC-').replace('--','-'); }
+      else if(!S.orderRetried){ S.orderRetried=true; botSay("Hmm, that doesn't quite match our GC-XXXXX format — mind double-checking? If you can't find it, just say \"skip\" and we'll proceed without it."); return; }
+      else { S.order=/skip/i.test(text)?"not provided":text; }
+      stage=3; botSay("Thank you. When did you first notice the issue — on delivery, or after some use?");
+    } else if(stage===3){
+      S.when=text; stage=4;
+      botSay("That helps a lot. One last thing — would you be able to share a photo of the product or packaging? A simple yes or no is fine; it's optional but speeds things up.");
+    } else if(stage===4){
+      S.photo=/\b(yes|yeah|sure|can|will|ok)\b/i.test(text)&&!/\b(no|not|can'?t|nope)\b/i.test(text);
+      stage=0;
+      botSay("Thank you so much for your patience, and again, I'm sorry this happened. I've logged everything below — a GlowCare specialist will follow up within 2 business days."+(S.safety?" Because you mentioned a skin reaction, this is marked HIGH priority and escalated to our Product Safety team.":""), ()=>{
+        setTimeout(summaryCard,450);
+        const done={...S};
+        setTimeout(()=>{Object.keys(S).forEach(k=>S[k]=(k==='safety'||k==='orderRetried')?false:null);},600);
+        setTimeout(()=>botSay("If anything else comes up, I'm here. Want to file another complaint? Just describe it and we'll start fresh."),1200);
+      });
+    }
+  }
+
+  // ---------- shared submit ----------
+  function submit(text){
+    text=(text||'').trim();
+    if(!text||busy) return;
+    add('user',esc(text));
+    inp.value='';
+    if(demoMode){ demoHandle(text); }
+    else{
+      busy=true; send.disabled=true;
+      askLLM(text).finally(()=>{ busy=false; send.disabled=false; inp.focus(); });
+    }
+  }
+  send.addEventListener('click',()=>submit(inp.value));
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') submit(inp.value); });
+  quick.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) submit(b.dataset.q); });
+
+  // greeting (local — no API call wasted on hello)
+  botSay(GREETING);
+  history.push({role:'assistant', content:GREETING});
+})();
+</script>
+</body>
+</html>
