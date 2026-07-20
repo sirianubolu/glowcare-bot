@@ -9,7 +9,7 @@
 // and set the matching key (e.g. OpenAI: https://api.openai.com/v1/chat/completions).
 
 const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'llama-3.3-70b-versatile';
+const MODEL = 'openai/gpt-oss-120b';
 
 const SYSTEM_PROMPT = `ROLE: You are the Complaint Care Assistant for GlowCare, a direct-to-consumer cosmetics brand (skincare and makeup). Your only job is to collect complete product complaint details empathetically and produce a structured summary.
 
